@@ -44,17 +44,21 @@
 
     var DEFAULT_BOARD_SIZE = 8;
     var CANVAS_DIMENSION = 400;
-    var COLOR_BLACK = "rgb(170,170,170)";
-    var COLOR_WHITE = "rgb(255,255,255)";
+    var COLOR_BLACK = "rgb(70,70,70)";
+    var COLOR_WHITE = "rgb(235,235,235)";
+    var COLOR_YELLOW = "rgb(255,255,0)";
     var BLACK_KING_URL = "graphics/black-king.png";
     var RED_KING_URL = "graphics/red-king.png";
     var RED_URL = "graphics/red-piece.png";
     var BLACK_URL = "graphics/black-piece.png";
 
-    //canvas
+    //canvas for checkers
     var ctx;
     var canvasTop;
     var canvasLeft;
+
+    //canvas for arrows
+    var arrowctx;
 
     //data model
     var board;
@@ -104,7 +108,8 @@
         var offset = $("#canvasCheckerboard").offset();
         canvasTop = offset.top;
         canvasLeft = offset.left;
-
+        arrowctx = document.getElementById("canvasArrow").getContext("2d");
+        $("#canvasArrow").offset(offset).css("visibility","visible");
         if ($.getUrlVar('size') && $.getUrlVar('size') >= 6) {
             board = new Board($.getUrlVar('size'));
         } else {
@@ -136,6 +141,8 @@
         
         $("#btnNewGame").click(function(evt) {
             board.prepareNewGame();
+            drawCanvas();
+            toggleTurn("black");
         });
 
         $("#btnAutoMove").click(function(evt) {
@@ -146,11 +153,11 @@
             toggleTurn();
           }
           drawCanvas();
+          drawArrow(arrowctx, result.to_col, result.to_row, result.from_col, result.from_row);
         });
 
         board.prepareNewGame();
         drawCanvas();
-
     });
 
     function drawCanvas(){
@@ -185,6 +192,31 @@
         ctx.fillStyle = originalFillStyle;
     }
 
+    function drawArrow(context, to_col, to_row, from_col, from_row){
+        context.clearRect(0,0,CANVAS_DIMENSION-10, CANVAS_DIMENSION-10);
+        context.strokeStyle = COLOR_YELLOW;
+        context.lineWidth=2;
+        var originalFillStyle = context.fillStyle;
+        context.strokeStyle = COLOR_YELLOW;
+        var squareDimension = CANVAS_DIMENSION/board.boardSize;
+        var tox = to_col*squareDimension + squareDimension/2;
+        var toy = to_row*squareDimension + squareDimension/2;
+        var fromx = from_col*squareDimension + squareDimension/2;
+        var fromy = from_row*squareDimension + squareDimension/2;
+        
+        var headlen = 10;   // length of head in pixels
+        var angle = Math.atan2(toy-fromy,tox-fromx);
+        context.beginPath();
+        context.moveTo(fromx, fromy);
+        context.lineTo(tox, toy);
+        context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+        context.moveTo(tox, toy);
+        context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+        context.closePath();
+        context.stroke();
+        context.fillStyle = originalFillStyle;
+    }
+
 </script>
 
 
@@ -205,6 +237,7 @@
 
         <td id="content">
             <canvas id="canvasCheckerboard" width="400" height="400"></canvas>
+            <canvas id="canvasArrow" width="400" height="400" visibility="none"></canvas>
         </td>
     </tr>
 

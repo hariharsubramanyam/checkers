@@ -10,16 +10,18 @@
 	width:100%
 }
 
-#content{
-	background-color:gray;
-}
-
 #canvasCheckerbaord{
 	z-index: 0;
+	border: 5px solid red;
+
 }
 
 .checkerPiece{
 	z-index: 1;
+}
+
+#canvasArrow{
+	z-index: 2;
 }
 
 #lblCurrentTurn{
