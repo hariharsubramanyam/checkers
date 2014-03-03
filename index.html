@@ -69,12 +69,31 @@
       return 1;
     }
 
+
+
+
     // Fill in this function to toggle the display for whose turn
     // The color parameter should be either "black" or "red"
-    var toggleTurn = function(color) {
-	// Your code here
+    var toggleTurn = function() {
+        if(whoseTurn == "black"){
+            whoseTurn = "red";
+        }else{
+            whoseTurn = "black";
+        }
+        changeTurnLabelColorTo(whoseTurn);
     }
 
+    function changeTurnLabelColorTo(color){
+        if(color == "red"){
+            $("#lblCurrentTurn").removeClass("blackBackground");
+            $("#lblCurrentTurn").addClass("redBackground");
+            $("#lblCurrentTurn").text("Red Move");
+        }else{
+            $("#lblCurrentTurn").removeClass("redBackground");
+            $("#lblCurrentTurn").addClass("blackBackground");
+            $("#lblCurrentTurn").text("Black Move");
+        }
+    }
 
 
     // This allows the Javascript code inside this block to only run when the page
@@ -126,6 +145,7 @@
           if (result != null) {
             toggleTurn();
           }
+          drawCanvas();
         });
 
         board.prepareNewGame();
@@ -134,16 +154,13 @@
     });
 
     function drawCanvas(){
-        drawBoard()
-    }
-
-    function drawBoard(){
         var originalFillStyle = ctx.fillStyle;
         var fillStyles = [COLOR_WHITE, COLOR_BLACK];
         var squareDimension = CANVAS_DIMENSION/board.boardSize;
         
         var checker;
         var image;
+        $(".checkerPiece").remove();
         for(var i = 0; i < board.boardSize; i++){
             for(var j = 0; j < board.boardSize; j++){
                 ctx.fillStyle = fillStyles[(i+j)%2];
@@ -179,7 +196,7 @@
     <tr>
         <td id="navigation">
           <table>
-			  <tr><td>		<!-- Your code here -->			</td></tr>
+			  <tr><td>		<p id="lblCurrentTurn" class="blackBackground">Black Move</p>		</td></tr>
               <tr><td><input id="btnNewGame" type="button" name="new" value="New Game"/></td></tr>
               <tr><td><input id="btnAutoMove" type="button" name="new" value="Auto Move"/></td></tr>
 

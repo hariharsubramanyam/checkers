@@ -21,3 +21,17 @@
 .checkerPiece{
 	z-index: 1;
 }
+
+#lblCurrentTurn{
+	color: rgb(255,255,255);
+	font-size: 1.5em;
+	text-align: center;
+}
+
+.blackBackground{
+	background: rgb(0,0,0);
+}
+
+.redBackground{
+	background: rgb(255,0,0);
+}
