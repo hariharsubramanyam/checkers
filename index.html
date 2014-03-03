@@ -46,9 +46,15 @@
     var CANVAS_DIMENSION = 400;
     var COLOR_BLACK = "rgb(170,170,170)";
     var COLOR_WHITE = "rgb(255,255,255)";
+    var BLACK_KING_URL = "graphics/black-king.png";
+    var RED_KING_URL = "graphics/red-king.png";
+    var RED_URL = "graphics/red-piece.png";
+    var BLACK_URL = "graphics/black-piece.png";
 
-    //canvas context
+    //canvas
     var ctx;
+    var canvasTop;
+    var canvasLeft;
 
     //data model
     var board;
@@ -76,6 +82,9 @@
     $(document).ready(function() {
 
         ctx = document.getElementById("canvasCheckerboard").getContext("2d");
+        var offset = $("#canvasCheckerboard").offset();
+        canvasTop = offset.top;
+        canvasLeft = offset.left;
 
         if ($.getUrlVar('size') && $.getUrlVar('size') >= 6) {
             board = new Board($.getUrlVar('size'));
@@ -120,22 +129,40 @@
         });
 
         board.prepareNewGame();
-        drawCanvas()
+        drawCanvas();
 
     });
 
     function drawCanvas(){
-        drawBackground()
+        drawBoard()
     }
 
-    function drawBackground(){
+    function drawBoard(){
         var originalFillStyle = ctx.fillStyle;
         var fillStyles = [COLOR_WHITE, COLOR_BLACK];
         var squareDimension = CANVAS_DIMENSION/board.boardSize;
+        
+        var checker;
+        var image;
         for(var i = 0; i < board.boardSize; i++){
             for(var j = 0; j < board.boardSize; j++){
                 ctx.fillStyle = fillStyles[(i+j)%2];
                 ctx.fillRect(i*squareDimension, j*squareDimension, squareDimension, squareDimension);
+                checker = board.getCheckerAt(i,j);
+                if(checker){
+                    image = $("<img class='checkerPiece'></img>");
+                    if(checker.color == "red" && checker.isKing){
+                        image.attr("src",RED_KING_URL);
+                    }else if(checker.color == "black" && checker.isKing){
+                        image.attr("src",BLACK_KING_URL);
+                    }else if(checker.color == "red" && !checker.isKing){
+                        image.attr("src",RED_URL);
+                    }else if(checker.color == "black" && !checker.isKing){
+                        image.attr("src",BLACK_URL);
+                    }
+                    image.css({position:"absolute", top:canvasTop+squareDimension*i,left:canvasLeft+squareDimension*j});
+                    image.appendTo("#content");
+                }
             }
         }
         ctx.fillStyle = originalFillStyle;

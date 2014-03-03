@@ -13,3 +13,11 @@
 #content{
 	background-color:gray;
 }
+
+#canvasCheckerbaord{
+	z-index: 0;
+}
+
+.checkerPiece{
+	z-index: 1;
+}
