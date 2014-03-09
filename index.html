@@ -44,7 +44,7 @@
 
     var DEFAULT_BOARD_SIZE = 8;
     var CANVAS_DIMENSION = 400;
-    var COLOR_BLACK = "rgb(70,70,70)";
+    var COLOR_BLACK = "rgb(100,100,100)";
     var COLOR_WHITE = "rgb(235,235,235)";
     var COLOR_YELLOW = "rgb(255,255,0)";
     var BLACK_KING_URL = "graphics/black-king.png";
@@ -175,7 +175,7 @@
                 ctx.fillRect(i*squareDimension, j*squareDimension, squareDimension, squareDimension);
                 checker = board.getCheckerAt(i,j);
                 if(checker){
-                    image = $("<img class='checkerPiece'></img>");
+                    image = $("<img class='checkerPiece' width='" + squareDimension + "' height='"+squareDimension+"'></img>");
                     if(checker.color == "red" && checker.isKing){
                         image.attr("src",RED_KING_URL);
                     }else if(checker.color == "black" && checker.isKing){
