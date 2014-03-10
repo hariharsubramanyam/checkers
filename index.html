@@ -42,11 +42,16 @@
         }
     });
 
+    // Board constants
     var DEFAULT_BOARD_SIZE = 8;
     var CANVAS_DIMENSION = 400;
+
+    // Color constants
     var COLOR_BLACK = "rgb(100,100,100)";
     var COLOR_WHITE = "rgb(235,235,235)";
     var COLOR_YELLOW = "rgb(255,255,0)";
+
+    // Image constants
     var BLACK_KING_URL = "graphics/black-king.png";
     var RED_KING_URL = "graphics/red-king.png";
     var RED_URL = "graphics/red-piece.png";
@@ -73,11 +78,11 @@
       return 1;
     }
 
-
-
-
-    // Fill in this function to toggle the display for whose turn
-    // The color parameter should be either "black" or "red"
+    /*
+    Switches the turn to the other player
+    Input (None, it uses whoseTurn)
+    Output: The turn switches to the other player and the text indicating the current player changes as well
+    */
     var toggleTurn = function() {
         if(whoseTurn == "black"){
             whoseTurn = "red";
@@ -87,6 +92,13 @@
         changeTurnLabelColorTo(whoseTurn);
     }
 
+    /*
+    Changes the text on screen to indicate the current color's turn
+    Input:
+        color: the color to set the label to (should be either "red" or "black")
+    Output: 
+        The label either displays "Red Move" or "Black Move" and either has a red or black background
+    */
     function changeTurnLabelColorTo(color){
         if(color == "red"){
             $("#lblCurrentTurn").removeClass("blackBackground");
@@ -104,10 +116,15 @@
     // has finished loading in the browser.
     $(document).ready(function() {
 
+        // Create the context for the checkerboard and offset it
         ctx = document.getElementById("canvasCheckerboard").getContext("2d");
+
+        // We need to retrieve the offset so that we can draw the checkers correctly
         var offset = $("#canvasCheckerboard").offset();
         canvasTop = offset.top;
         canvasLeft = offset.left;
+
+        // We need another context for the arrow canvas (it is layered on top of the checkerboard canvas and the images)
         arrowctx = document.getElementById("canvasArrow").getContext("2d");
         $("#canvasArrow").offset(offset).css("visibility","visible");
         if ($.getUrlVar('size') && $.getUrlVar('size') >= 6) {
@@ -161,6 +178,13 @@
         drawCanvas();
     });
 
+    
+    /*
+    Draws a the canvas for the checkerboard
+    Input (None)
+    Output:
+        The checkerboard is redrawn and the images are updated to reflect the board state
+    */
     function drawCanvas(){
         var originalFillStyle = ctx.fillStyle;
         var fillStyles = [COLOR_WHITE, COLOR_BLACK];
@@ -193,28 +217,48 @@
         ctx.fillStyle = originalFillStyle;
     }
 
+    /*
+    Draws a yellow arrow on the canvas
+    Input:
+        context: the drawing context
+        to_col: the column that the head of the arrow should be in
+        to_row: the row that the head of the arrow should be in
+        from_col: the column that the tail of the arrow should be in
+        from_row: the row that the tail of the arrow should be in
+    Output:
+        A yellow arrow with its tail at the center of the (from_row,from_col) square and
+        its head at center of the (to_row,to_col) square
+    */
     function drawArrow(context, to_col, to_row, from_col, from_row){
+        // Clear the canvas, set the color and width
         context.clearRect(0,0,CANVAS_DIMENSION-10, CANVAS_DIMENSION-10);
         context.strokeStyle = COLOR_YELLOW;
         context.lineWidth=2;
+        var arrowhead = 10;
         var originalFillStyle = context.fillStyle;
         context.strokeStyle = COLOR_YELLOW;
+
+        // Convert the row and column to coordinates
         var squareDimension = CANVAS_DIMENSION/board.boardSize;
-        var tox = to_col*squareDimension + squareDimension/2;
-        var toy = to_row*squareDimension + squareDimension/2;
-        var fromx = from_col*squareDimension + squareDimension/2;
-        var fromy = from_row*squareDimension + squareDimension/2;
+        var end_x = to_col*squareDimension + squareDimension/2;
+        var end_y = to_row*squareDimension + squareDimension/2;
+        var start_x = from_col*squareDimension + squareDimension/2;
+        var start_y = from_row*squareDimension + squareDimension/2;
         
-        var headlen = 10;   // length of head in pixels
-        var angle = Math.atan2(toy-fromy,tox-fromx);
+        
+        // Do the Trig and draw
+        var angle = Math.atan2(end_y-start_y,end_x-start_x);
+        var PI_OVER_6 = Math.PI/6.0;
         context.beginPath();
-        context.moveTo(fromx, fromy);
-        context.lineTo(tox, toy);
-        context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
-        context.moveTo(tox, toy);
-        context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+        context.moveTo(start_x, start_y);
+        context.lineTo(end_x, end_y);
+        context.lineTo(end_x - arrowhead * Math.cos(angle - PI_OVER_6), end_y - arrowhead * Math.sin(angle - PI_OVER_6));
+        context.moveTo(end_x, end_y);
+        context.lineTo(end_x - arrowhead * Math.cos(angle + PI_OVER_6), end_y - arrowhead * Math.sin(angle + PI_OVER_6));
         context.closePath();
         context.stroke();
+        
+        // Restore the original context
         context.fillStyle = originalFillStyle;
     }
 
