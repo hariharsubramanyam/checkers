@@ -159,7 +159,8 @@
         $("#btnNewGame").click(function(evt) {
             board.prepareNewGame();
             drawCanvas();
-            toggleTurn("red");
+            whoseTurn = "black";
+            changeTurnLabelColorTo(whoseTurn);
             arrowctx.clearRect(0,0,CANVAS_DIMENSION-10, CANVAS_DIMENSION-10);
         });
 
