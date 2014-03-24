@@ -196,6 +196,8 @@
     function dragstart(evt){
         $(".checkerPiece").removeClass("selectedPiece")
         evt.dataTransfer.setData("imageID",evt.target.id);
+        evt.dataTransfer.setData("startX",evt.clientX);
+        evt.dataTransfer.setData("startY",evt.clientY);
         var image = $("#"+evt.target.id);
         image.addClass("selectedPiece");
     }
@@ -205,13 +207,30 @@
     }
 
     function onDrop(evt){
+        evt.preventDefault();
         $("#"+evt.target.id).removeClass("selectedPiece");
+        var image = $("#"+evt.dataTransfer.getData("imageID"));
+        var from_x = Number(image.attr("boardX"));
+        var from_y = Number(image.attr("boardY"));
+
+        // var x_delta_px = 1.0*(evt.clientX - Number(evt.dataTransfer.getData("startX")));
+        // var y_delta_px = 1.0*(evt.clientY - Number(evt.dataTransfer.getData("startY")));
+        // var x_delta_sq = x_delta_px/CANVAS_DIMENSION*board.boardSize;
+        // var y_delta_sq = y_delta_px/CANVAS_DIMENSION*board.boardSize;
+        // var to_x = Math.floor(from_x + x_delta_sq);
+        // var to_y = Math.floor(from_y + y_delta_sq);
+        // console.log(from_y);
+        // console.log(to_x+","+to_y);
         var to_x = Math.floor(1.0*evt.offsetY/CANVAS_DIMENSION*board.boardSize);
         var to_y = Math.floor(1.0*evt.offsetX/CANVAS_DIMENSION*board.boardSize);
-        var image = $("#"+evt.dataTransfer.getData("imageID"));
-        var from_x = image.attr("boardX");
-        var from_y = image.attr("boardY");
-        console.log("Offsets: ("+evt.offsetX+","+evt.offsetY+")");
+        if(isNaN(to_x)){
+            var to_x = Math.floor(1.0*evt.clientY/CANVAS_DIMENSION*board.boardSize);
+            var to_y = Math.floor(1.0*(evt.clientX-canvasLeft)/CANVAS_DIMENSION*board.boardSize);
+            console.log(evt);
+        }else{
+            console.log("Offsets "+evt.offsetX +","+evt.offsetY);
+        }
+        console.log("Canvas Offsets "+canvasTop+","+canvasLeft);
         console.log("Moving from ("+from_x+","+from_y+") to ("+to_x +","+to_y+")");
         makeAMove(from_x,from_y,to_x,to_y);
     }
