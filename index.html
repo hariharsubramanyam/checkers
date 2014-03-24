@@ -75,6 +75,11 @@
     var redoStack = [];
 
 
+    /*
+        Convert color into directory, where
+        black = -1
+        red = 1
+    */
     var directionOf = function(color) {
       if (color == "black") {
         return -1;
@@ -180,11 +185,18 @@
         $("#btnRedo").click(redo);
     });
 
+
+    /*
+        When a move has been made, clear the redo stack and push the move on the undo stack
+    */
     function updateStacksAfterMove(move){
         undoStack.push(move);
         redoStack = [];
     }
 
+    /*
+        If there are moves to undo/redo, makes sure the undo/redo button is enabled
+    */
     function updateUndoRedoButtonEnabled(){
         if(undoStack.length > 0){
             $("#btnUndo").removeAttr("disabled");
@@ -199,18 +211,30 @@
         }
     }
 
+    /*
+        Undo a move
+    */
     function undo(){
         var move = undoStack.pop();
         redoStack.push(move);
         makeAMove(move.to_row, move.to_col, move.from_row, move.from_col, true);
     }
 
+    /*
+        Redo a move
+    */
     function redo(){
         var move = redoStack.pop();
         undoStack.push(move);
         makeAMove(move.from_row, move.from_col, move.to_row, move.to_col, true);
     }
 
+
+    /*
+        Move a checker from (from_x, from_y) to (to_x, to_y) if the rules allow its
+            If the values are undefined, make a random move
+            If ignore_rules = true, make the move even if the rules don't allow it
+    */
     function makeAMove(from_x,from_y,to_x,to_y,ignore_rules){
         var result = null;
         if(ignore_rules){
@@ -243,6 +267,9 @@
         }
     }
 
+    /*
+        When a checker piece is dragged, set fields for the dataTansfer and mark it as a selected piece
+    */
     function dragstart(evt){
         $(".checkerPiece").removeClass("selectedPiece")
         evt.dataTransfer.setData("imageID",evt.target.id);
@@ -252,27 +279,26 @@
         image.addClass("selectedPiece");
     }
 
+    /*
+        On drag over, suppress native behavior on dragover
+    */
     function dragover(evt){
         evt.preventDefault();
     }
 
+    /*
+        On drop, figure out the old square and new square of the piece and make a move
+    */
     function onDrop(evt){
         evt.preventDefault();
         $("#"+evt.target.id).removeClass("selectedPiece");
         var image = $("#"+evt.dataTransfer.getData("imageID"));
         var from_x = Number(image.attr("boardX"));
         var from_y = Number(image.attr("boardY"));
-
-        // var x_delta_px = 1.0*(evt.clientX - Number(evt.dataTransfer.getData("startX")));
-        // var y_delta_px = 1.0*(evt.clientY - Number(evt.dataTransfer.getData("startY")));
-        // var x_delta_sq = x_delta_px/CANVAS_DIMENSION*board.boardSize;
-        // var y_delta_sq = y_delta_px/CANVAS_DIMENSION*board.boardSize;
-        // var to_x = Math.floor(from_x + x_delta_sq);
-        // var to_y = Math.floor(from_y + y_delta_sq);
-        // console.log(from_y);
-        // console.log(to_x+","+to_y);
         var to_x = Math.floor(1.0*evt.offsetY/CANVAS_DIMENSION*board.boardSize);
         var to_y = Math.floor(1.0*evt.offsetX/CANVAS_DIMENSION*board.boardSize);
+        
+        // For firefox
         if(isNaN(to_x)){
             var to_x = Math.floor(1.0*evt.clientY/CANVAS_DIMENSION*board.boardSize);
             var to_y = Math.floor(1.0*(evt.clientX-canvasLeft)/CANVAS_DIMENSION*board.boardSize);
