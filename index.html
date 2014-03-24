@@ -170,10 +170,13 @@
             whoseTurn = "black";
             changeTurnLabelColorTo(whoseTurn);
             arrowctx.clearRect(0,0,CANVAS_DIMENSION-10, CANVAS_DIMENSION-10);
+            undoStack = [];
+            redoStack = [];
+            updateUndoRedoButtonEnabled();
         });
 
         $("#btnAutoMove").click(function(evt) {
-            makeAMove();
+            makeAMove(null,"random");
 
         });
 
@@ -217,7 +220,7 @@
     function undo(){
         var move = undoStack.pop();
         redoStack.push(move);
-        makeAMove(move.to_row, move.to_col, move.from_row, move.from_col, true);
+        makeAMove(move, "undo");
     }
 
     /*
@@ -226,41 +229,49 @@
     function redo(){
         var move = redoStack.pop();
         undoStack.push(move);
-        makeAMove(move.from_row, move.from_col, move.to_row, move.to_col, true);
+        makeAMove(move, "redo");
     }
 
 
     /*
-        Move a checker from (from_x, from_y) to (to_x, to_y) if the rules allow its
-            If the values are undefined, make a random move
-            If ignore_rules = true, make the move even if the rules don't allow it
+        Move a checker from (move.from_row, move.from_col) to (move.to_row, move.to_col) if the rules allow it
+        move_type = "usermove","random","undo", or "redo"
     */
-    function makeAMove(from_x,from_y,to_x,to_y,ignore_rules){
+    function makeAMove(move,move_type){
         var result = null;
-        if(ignore_rules){
-            board.moveTo(board.getCheckerAt(from_x,from_y),to_x,to_y);
-            result = {
-                from_col: from_y,
-                from_row: from_x,
-                to_col: to_y,
-                to_row: to_x
+        if(move_type == "undo"){
+            board.moveTo(board.getCheckerAt(move.to_row, move.to_col), move.from_row, move.from_col);
+
+            // If it was a king, unmake it a king
+            if(move.made_king){
+                board.getCheckerAt(move.from_row, move.from_col).isKing = false;
             }
-        }
-        else if(from_x == undefined || from_y == undefined || to_x == undefined || to_y == undefined){
+            // Restore any pieces that were killed
+            for(var i = 0; i < move.remove.length; i++){
+                board.square[move.remove[i].row][move.remove[i].col] = move.remove[i];
+            }
+            result = {
+                from_col: move.to_col,
+                from_row: move.to_row,
+                to_col: move.from_col,
+                to_row: move.from_row
+            }
+            console.log(move);
+        }else if(move_type == "random"){
             var playerColor = whoseTurn;
             var playerDirection = directionOf(playerColor);
             result = rules.makeRandomMove(playerColor, playerDirection);
-        }else{
-            var checker = board.getCheckerAt(from_x, from_y);
+        }else if(move_type == "usermove" || move_type == "redo"){
+            var checker = board.getCheckerAt(move.from_row, move.from_col);
             var turnDirection = directionOf(whoseTurn);
             var playerDirection = directionOf(checker.color);
-            result = rules.makeMove(checker, turnDirection, playerDirection, to_x, to_y);
+            result = rules.makeMove(checker, turnDirection, playerDirection, move.to_row, move.to_col);
         }
         if(result != null){
             toggleTurn();
             drawCanvas();
             drawArrow(arrowctx, result.to_col, result.to_row, result.from_col, result.from_row)
-            if(!ignore_rules){
+            if(move_type == "random" || move_type == "usermove"){
                 updateStacksAfterMove(result);
             }
             updateUndoRedoButtonEnabled();
@@ -303,7 +314,13 @@
             var to_x = Math.floor(1.0*evt.clientY/CANVAS_DIMENSION*board.boardSize);
             var to_y = Math.floor(1.0*(evt.clientX-canvasLeft)/CANVAS_DIMENSION*board.boardSize);
         }
-        makeAMove(from_x,from_y,to_x,to_y);
+        var move = {
+            from_col: from_y,
+            from_row: from_x,
+            to_col: to_y,
+            to_row: to_x
+        }
+        makeAMove(move,"usermove");
     }
 
     /*
