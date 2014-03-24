@@ -22,6 +22,8 @@
 
 #canvasArrow{
 	z-index: 2;
+	pointer-events:none;
+
 }
 
 #lblCurrentTurn{
@@ -36,4 +38,8 @@
 
 .redBackground{
 	background: rgb(255,0,0);
+}
+
+.selectedPiece{
+	background-color: yellow;
 }

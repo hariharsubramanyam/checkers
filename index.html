@@ -115,7 +115,6 @@
     // This allows the Javascript code inside this block to only run when the page
     // has finished loading in the browser.
     $(document).ready(function() {
-
         // Create the context for the checkerboard and offset it
         ctx = document.getElementById("canvasCheckerboard").getContext("2d");
 
@@ -165,21 +164,58 @@
         });
 
         $("#btnAutoMove").click(function(evt) {
-          var playerColor = whoseTurn;
-          var playerDirection = directionOf(playerColor);
-          var result = rules.makeRandomMove(playerColor, playerDirection);
-          if (result != null) {
-            toggleTurn();
-          }
-          drawCanvas();
-          drawArrow(arrowctx, result.to_col, result.to_row, result.from_col, result.from_row);
+            makeAMove();
+
         });
 
         board.prepareNewGame();
         drawCanvas();
     });
 
-    
+    function makeAMove(from_x,from_y,to_x,to_y){
+        var playerColor = whoseTurn;
+        var playerDirection = directionOf(playerColor);
+        if(from_x == undefined || from_y == undefined || to_x == undefined || to_y == undefined){
+            var result = rules.makeRandomMove(playerColor, playerDirection);
+        }else{
+            board.moveTo(board.getCheckerAt(from_x,from_y),to_x,to_y);
+            var result = {
+                to_col: to_y,
+                to_row: to_x,
+                from_col: from_y,
+                from_row: from_x
+            }
+        }
+        if (result != null) {
+            toggleTurn();
+        }
+        drawCanvas();
+        drawArrow(arrowctx, result.to_col, result.to_row, result.from_col, result.from_row);
+    }
+
+    function dragstart(evt){
+        $(".checkerPiece").removeClass("selectedPiece")
+        evt.dataTransfer.setData("imageID",evt.target.id);
+        var image = $("#"+evt.target.id);
+        image.addClass("selectedPiece");
+    }
+
+    function dragover(evt){
+        evt.preventDefault();
+    }
+
+    function onDrop(evt){
+        $("#"+evt.target.id).removeClass("selectedPiece");
+        var to_x = Math.floor(1.0*evt.offsetY/CANVAS_DIMENSION*board.boardSize);
+        var to_y = Math.floor(1.0*evt.offsetX/CANVAS_DIMENSION*board.boardSize);
+        var image = $("#"+evt.dataTransfer.getData("imageID"));
+        var from_x = image.attr("boardX");
+        var from_y = image.attr("boardY");
+        console.log("Offsets: ("+evt.offsetX+","+evt.offsetY+")");
+        console.log("Moving from ("+from_x+","+from_y+") to ("+to_x +","+to_y+")");
+        makeAMove(from_x,from_y,to_x,to_y);
+    }
+
     /*
     Draws a the canvas for the checkerboard
     Input (None)
@@ -200,7 +236,25 @@
                 ctx.fillRect(i*squareDimension, j*squareDimension, squareDimension, squareDimension);
                 checker = board.getCheckerAt(i,j);
                 if(checker){
-                    image = $("<img class='checkerPiece' width='" + squareDimension + "' height='"+squareDimension+"'></img>");
+                    image = $("<img ondragstart='dragstart(event)'></img>");
+                    image.addClass(checker.color+"Piece");
+                    image.addClass("checkerPiece");
+                    image.attr("id","pieceAt"+i+"_"+j);
+                    image.attr("width",squareDimension);
+                    image.attr("height",squareDimension);
+                    image.attr("boardX", i);
+                    image.attr("boardY", j);
+                    if(checker.color == "red"){
+                        image.attr("draggable","false");
+                    }else{
+                        image.attr("draggable","true");
+                    }
+                    image.click(function(){
+                        $(".checkerPiece").removeClass("selectedPiece");
+                        $(this).addClass("selectedPiece");
+                    });
+                    //image = $("<img class='checkerPiece "+ checker.color + "piece" +"'width='" + squareDimension + "' height='"+squareDimension+"'></img>");
+
                     if(checker.color == "red" && checker.isKing){
                         image.attr("src",RED_KING_URL);
                     }else if(checker.color == "black" && checker.isKing){
@@ -284,7 +338,7 @@
         </td>
 
         <td id="content">
-            <canvas id="canvasCheckerboard" width="400" height="400"></canvas>
+            <canvas id="canvasCheckerboard" width="400" height="400" ondragover="dragover(event)" ondrop="onDrop(event)"></canvas>
             <canvas id="canvasArrow" width="400" height="400" visibility="none"></canvas>
         </td>
     </tr>
