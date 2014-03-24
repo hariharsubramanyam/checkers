@@ -173,24 +173,22 @@
     });
 
     function makeAMove(from_x,from_y,to_x,to_y){
-        var playerColor = whoseTurn;
-        var playerDirection = directionOf(playerColor);
+        var result = null;
         if(from_x == undefined || from_y == undefined || to_x == undefined || to_y == undefined){
-            var result = rules.makeRandomMove(playerColor, playerDirection);
+            var playerColor = whoseTurn;
+            var playerDirection = directionOf(playerColor);
+            result = rules.makeRandomMove(playerColor, playerDirection);
         }else{
-            board.moveTo(board.getCheckerAt(from_x,from_y),to_x,to_y);
-            var result = {
-                to_col: to_y,
-                to_row: to_x,
-                from_col: from_y,
-                from_row: from_x
-            }
+            var checker = board.getCheckerAt(from_x, from_y);
+            var turnDirection = directionOf(whoseTurn);
+            var playerDirection = directionOf(checker.color);
+            result = rules.makeMove(checker, turnDirection, playerDirection, to_x, to_y);
         }
-        if (result != null) {
+        if(result != null){
             toggleTurn();
+            drawCanvas();
+            drawArrow(arrowctx, result.to_col, result.to_row, result.from_col, result.from_row);
         }
-        drawCanvas();
-        drawArrow(arrowctx, result.to_col, result.to_row, result.from_col, result.from_row);
     }
 
     function dragstart(evt){
@@ -226,12 +224,7 @@
         if(isNaN(to_x)){
             var to_x = Math.floor(1.0*evt.clientY/CANVAS_DIMENSION*board.boardSize);
             var to_y = Math.floor(1.0*(evt.clientX-canvasLeft)/CANVAS_DIMENSION*board.boardSize);
-            console.log(evt);
-        }else{
-            console.log("Offsets "+evt.offsetX +","+evt.offsetY);
         }
-        console.log("Canvas Offsets "+canvasTop+","+canvasLeft);
-        console.log("Moving from ("+from_x+","+from_y+") to ("+to_x +","+to_y+")");
         makeAMove(from_x,from_y,to_x,to_y);
     }
 
