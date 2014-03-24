@@ -70,6 +70,10 @@
     var rules;
     var whoseTurn = "black";
 
+    // stacks for undo and redo
+    var undoStack = [];
+    var redoStack = [];
+
 
     var directionOf = function(color) {
       if (color == "black") {
@@ -170,11 +174,55 @@
 
         board.prepareNewGame();
         drawCanvas();
+        $("#btnUndo").attr("disabled","true");
+        $("#btnRedo").attr("disabled","true");
+        $("#btnUndo").click(undo);
+        $("#btnRedo").click(redo);
     });
 
-    function makeAMove(from_x,from_y,to_x,to_y){
+    function updateStacksAfterMove(move){
+        undoStack.push(move);
+        redoStack = [];
+    }
+
+    function updateUndoRedoButtonEnabled(){
+        if(undoStack.length > 0){
+            $("#btnUndo").removeAttr("disabled");
+        }else{
+            $("#btnUndo").attr("disabled","true");
+        }
+
+        if(redoStack.length > 0){
+            $("#btnRedo").removeAttr("disabled");
+        }else{
+            $("#btnRedo").attr("disabled","true");
+        }
+    }
+
+    function undo(){
+        var move = undoStack.pop();
+        redoStack.push(move);
+        makeAMove(move.to_row, move.to_col, move.from_row, move.from_col, true);
+    }
+
+    function redo(){
+        var move = redoStack.pop();
+        undoStack.push(move);
+        makeAMove(move.from_row, move.from_col, move.to_row, move.to_col, true);
+    }
+
+    function makeAMove(from_x,from_y,to_x,to_y,ignore_rules){
         var result = null;
-        if(from_x == undefined || from_y == undefined || to_x == undefined || to_y == undefined){
+        if(ignore_rules){
+            board.moveTo(board.getCheckerAt(from_x,from_y),to_x,to_y);
+            result = {
+                from_col: from_y,
+                from_row: from_x,
+                to_col: to_y,
+                to_row: to_x
+            }
+        }
+        else if(from_x == undefined || from_y == undefined || to_x == undefined || to_y == undefined){
             var playerColor = whoseTurn;
             var playerDirection = directionOf(playerColor);
             result = rules.makeRandomMove(playerColor, playerDirection);
@@ -187,7 +235,11 @@
         if(result != null){
             toggleTurn();
             drawCanvas();
-            drawArrow(arrowctx, result.to_col, result.to_row, result.from_col, result.from_row);
+            drawArrow(arrowctx, result.to_col, result.to_row, result.from_col, result.from_row)
+            if(!ignore_rules){
+                updateStacksAfterMove(result);
+            }
+            updateUndoRedoButtonEnabled();
         }
     }
 
