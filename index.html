@@ -351,10 +351,10 @@
                     image.attr("height",squareDimension);
                     image.attr("boardX", i);
                     image.attr("boardY", j);
-                    if(checker.color == "red"){
-                        image.attr("draggable","false");
-                    }else{
+                    if(directionOf(checker.color) == directionOf(whoseTurn)){
                         image.attr("draggable","true");
+                    }else{
+                        image.attr("draggable","false");
                     }
                     image.click(function(){
                         $(".checkerPiece").removeClass("selectedPiece");
